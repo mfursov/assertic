@@ -1,2 +1,1 @@
-# checkolate
-Minimalist validators and assertions for TypeScript and JavaScript
+Assertions and validations for TypeScript
