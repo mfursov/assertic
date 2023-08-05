@@ -1,2 +1,2 @@
-# assertic
-Assertions and validation library for TypeScript
+# checkolate
+Minimalist validators and assertions for TypeScript and JavaScript
