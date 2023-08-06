@@ -35,7 +35,7 @@ describe('assertTruthy', () => {
     it('throws a correct error object', () => {
         expect(() => assertTruthy(false)).toThrowError('Assertion error');
         expect(() => assertTruthy(false, 'My error message')).toThrowError('My error message');
-        expect(() => assertTruthy(false, () => 'Error string')).toThrowError('Error string');
+        expect(() => assertTruthy(false, () => 'My lazily evaluated error message')).toThrowError('My lazily evaluated error message');
     });
 });
 
