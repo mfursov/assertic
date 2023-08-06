@@ -28,7 +28,7 @@ Examples of assertion factories: `objectAssertion`, `arrayAssertion`, `stringAss
 ### Usage:
 
 ```typescript
-import {assertTruthy} from './Assertion';
+import {assertTruthy} from 'assertic';
 
 // Asserts that *value* is truthy.
 const value: string | undefined = getStringOrUndefined();
@@ -38,7 +38,7 @@ assertTruthy(value, 'Expected value is not set!');
 ```
 
 ```typescript
-import {truthy} from './Assertion';
+import {truthy} from 'assertic';
 
 // Asserts that *value* is truthy.
 const value: string = truthy(getStringOrUndefined());
@@ -48,8 +48,7 @@ const value: string = truthy(getStringOrUndefined());
 Asserting (validating) unknown JSON:
 
 ```typescript
-import {assertObject} from './Assertion';
-import {assertNumber, assertString} from './AssertionsLib';
+import {assertNumber, assertObject, assertString} from 'assertic';
 
 interface ExpectedType {
     name: string;
@@ -65,8 +64,7 @@ const {name, count} = someObject;
 And for arrays too:
 
 ```typescript
-import {assertArray} from './Assertion';
-import {assertNumber} from './AssertionsLib';
+import {assertArray, assertNumber} from 'assertic';
 
 type ExpectedElementType = number;
 const someArray: unknown = []; // Some data with unknown type. For example, passed as JSON input to an HTTP endpoint.
