@@ -24,7 +24,7 @@ export function fail(error?: AssertionErrorProvider): never {
     throw new Error(errorMessage || 'Assertion error');
 }
 
-/** Returns validation context as a string. Calls contextProvider() if needed. */
+/** Returns validation context as a string. Calls errorProvider() if needed. */
 export function getErrorMessage(errorProvider: AssertionErrorProvider | undefined): string {
     if (errorProvider === undefined) {
         return '';
