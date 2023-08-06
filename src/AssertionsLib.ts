@@ -3,7 +3,11 @@ import {isBoolean, isEmail, isHexString, isNumber, isString, isUuid} from './Che
 
 export function formatError(contextProvider: AssertionErrorProvider | undefined, message: string, value: unknown): string {
     const context = getErrorMessage(contextProvider);
-    const renderedValue = value === undefined ? '<undefined>' : `<${typeof value}:${value}>`;
+    const renderedValue = value === undefined
+        ? '<undefined>'
+        : value === null
+            ? '<null>'
+            : `<${typeof value}:${value}>`;
     return `${context ? `${context}: ` : ''}${message} ${renderedValue}`;
 }
 

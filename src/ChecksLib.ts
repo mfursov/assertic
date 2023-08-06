@@ -1,6 +1,6 @@
 /** Returns *true* if the value is *boolean*. */
 export function isBoolean(value: unknown): value is boolean {
-    return typeof value === 'string';
+    return typeof value === 'boolean';
 }
 
 /** Returns *true* if the value is *string*. */

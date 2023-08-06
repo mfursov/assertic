@@ -21,7 +21,7 @@ export function truthy<T>(value: T, error?: AssertionErrorProvider): NonNullable
 
 export function fail(error?: AssertionErrorProvider): never {
     const errorMessage = getErrorMessage(error);
-    throw new Error(errorMessage ?? 'Assertion error');
+    throw new Error(errorMessage || 'Assertion error');
 }
 
 /** Returns validation context as a string. Calls contextProvider() if needed. */
@@ -58,8 +58,11 @@ export type ObjectAssertion<ObjectType> = {
 export type ObjectCrossFieldAssertion<ValueType> = (value: ValueType, errorProvider?: AssertionErrorProvider) => void;
 
 export interface ObjectAssertionConstraints {
-    /** Makes *assertObject()* function to fail if *value* has any properties not covered by the specified object type. */
-    failOnMissedFields?: boolean;
+    /**
+     * Makes *assertObject()* function to fail if *value* has any properties
+     * not covered by the assertions: beyond the asserted object type.
+     */
+    failOnUnknownFields?: boolean;
 }
 
 /**
@@ -82,7 +85,7 @@ export function assertObject<ObjectType>(value: unknown,
     assertTruthy(value !== null, () => errorWithContext(`is null`));
     assertTruthy(!Array.isArray(value), () => errorWithContext(`is an array.`));
     const assertionEntries = Object.entries(objectAssertion);
-    if (constraints.failOnMissedFields) {
+    if (constraints.failOnUnknownFields) {
         for (const objectFieldName in value) {
             assertTruthy(assertionEntries.some(([assertionFieldName]) => objectFieldName === assertionFieldName),
                 errorWithContext(`property can't be checked: ${objectFieldName}`));
@@ -97,7 +100,7 @@ export function assertObject<ObjectType>(value: unknown,
         const fieldValue: unknown = (value as Record<string, unknown>)[fieldKey];
         const fieldCtx: AssertionErrorProvider = () => `${ctx()}.${fieldKey}`;
         if (typeof fieldAssertion === 'object') {
-            assertTruthy(!Array.isArray(fieldValue), () => `${ctx()}.${fieldCtx()} use createArrayAssertion() to create a ValueAssertion for an array`);
+            assertTruthy(!Array.isArray(fieldValue), () => `${ctx()}.${fieldCtx()} use arrayAssertion() to create a ValueAssertion for an array`);
             assertObject(fieldValue, fieldAssertion, fieldCtx);
         } else {
             assertTruthy(typeof fieldAssertion === 'function', () => `${ctx()}.${fieldCtx()} assertion is not a function`);
@@ -153,7 +156,7 @@ export function assertArray<T>(value: unknown,
     for (; i < value.length; i++) {
         const element: unknown = value[i];
         if (typeof elementAssertion === 'object') {
-            assertTruthy(!Array.isArray(element), () => `${elementErrorProvider}: use createArrayAssertion() to create a ValueAssertion for an array`);
+            assertTruthy(!Array.isArray(element), () => `${elementErrorProvider}: use arrayAssertion() to create a ValueAssertion for an array`);
             assertObject(element, elementAssertion, elementErrorProvider);
         } else {
             callValueAssertion(element, elementAssertion, elementErrorProvider);
