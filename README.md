@@ -71,7 +71,7 @@ const someArray: unknown = []; // Some data with unknown type. For example, pass
 
 assertArray<ExpectedElementType>(someObject, assertNumber, {minLength: 1});
 // *someArray* has Array<ExpectedElementType> here.
-const {name, count} = someObject;
+const value: number = someArray[0];
 ```
 
 Check [unit tests](https://github.com/mfursov/assertic/tree/master/tests) for more examples.
