@@ -1,5 +1,5 @@
 import {AssertionErrorProvider, assertTruthy, getErrorMessage, ValueAssertion} from './Assertion';
-import {isBoolean, isEmail, isHexString, isNumber, isString, isUuid} from './ChecksLib';
+import {isBoolean, isEmail, isHexString, isNonNullable, isNumber, isString, isUuid} from './ChecksLib';
 
 export function formatError(contextProvider: AssertionErrorProvider | undefined, message: string, value: unknown): string {
     const context = getErrorMessage(contextProvider);
@@ -35,3 +35,7 @@ export const assertHexString: ValueAssertion<string> = (value: unknown, context 
 export const assertEmail: ValueAssertion<string> = (value: unknown, context = undefined): asserts value is string => {
     assertTruthy(isEmail(value), () => formatError(context, 'Invalid email', value));
 };
+
+export function assertNonNullable<T = unknown>(value: T, context = undefined): asserts value {
+    assertTruthy(isNonNullable(value), () => formatError(context, `Value is ${value === undefined ? 'undefined' : 'null'}`, value));
+}

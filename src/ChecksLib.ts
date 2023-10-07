@@ -71,3 +71,8 @@ const HEX_STRING_REGEX = /^[0-9a-fA-F]*$/;
 export function isHexString(value: unknown): value is string {
     return isString(value) && HEX_STRING_REGEX.test(value);
 }
+
+/** Returns true if value is not 'null' and not 'undefined'. */
+export function isNonNullable<T = unknown>(value: T | undefined | null): value is NonNullable<T> {
+    return value !== null && value !== undefined;
+}

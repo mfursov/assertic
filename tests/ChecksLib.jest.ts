@@ -1,5 +1,5 @@
 import {describe, expect, it} from '@jest/globals';
-import {checkArrayHasUniqueElements, EmailConstraints, isBoolean, isEmail, isHexString, isNumber, isString} from '../src';
+import {checkArrayHasUniqueElements, EmailConstraints, isBoolean, isEmail, isHexString, isNonNullable, isNumber, isString} from '../src';
 
 describe('isBoolean', () => {
     it('returns true for a boolean values', () => {
@@ -205,5 +205,24 @@ describe('isHexString', () => {
         expect(isHexString(null)).toBe(false);
         expect(isHexString(undefined)).toBe(false);
         expect(isHexString({hex: 'abcdef'})).toBe(false);
+    });
+});
+
+describe('isNonNullable', () => {
+    it('should return false for undefined or null', () => {
+        expect(isNonNullable(null)).toBe(false);
+        expect(isNonNullable(undefined)).toBe(false);
+    });
+    it('should return true for non-undefined and non-null', () => {
+        expect(isNonNullable({})).toBe(true);
+        expect(isNonNullable(false)).toBe(true);
+        expect(isNonNullable(0)).toBe(true);
+        expect(isNonNullable(NaN)).toBe(true);
+        expect(isNonNullable(Infinity)).toBe(true);
+        expect(isNonNullable(() => 1)).toBe(true);
+        expect(isNonNullable([])).toBe(true);
+        expect(isNonNullable('')).toBe(true);
+        expect(isNonNullable(true)).toBe(true);
+        expect(isNonNullable(BigInt(0))).toBe(true);
     });
 });

@@ -1,7 +1,7 @@
 import {checkArrayHasUniqueElements} from './ChecksLib';
 
 /** Lazy error message provider. */
-export type AssertionErrorProvider = (() => string) | string;
+export type AssertionErrorProvider = (() => string | Error) | string;
 
 /** Asserts that the *param* value is truthy using '!' operator or throws an Error.  */
 export function assertTruthy(value: unknown, error?: AssertionErrorProvider): asserts value {
@@ -29,7 +29,14 @@ export function getErrorMessage(errorProvider: AssertionErrorProvider | undefine
     if (errorProvider === undefined) {
         return '';
     }
-    return typeof errorProvider === 'string' ? errorProvider : errorProvider();
+    if (typeof errorProvider === 'string') {
+        return errorProvider;
+    }
+    const error = errorProvider();
+    if (typeof error === 'string') {
+        return error;
+    }
+    return error.message;
 }
 
 

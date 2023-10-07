@@ -1,5 +1,5 @@
 import {describe, expect, it} from '@jest/globals';
-import {assertBoolean} from '../src';
+import {assertBoolean, assertNonNullable} from '../src';
 
 describe('assertBoolean', () => {
 
@@ -22,5 +22,21 @@ describe('assertBoolean', () => {
         expect(() => assertBoolean({})).toThrowError();
         expect(() => assertBoolean(NaN)).toThrowError();
         expect(() => assertBoolean(Infinity)).toThrowError();
+    });
+});
+
+describe('assertNonNullable', () => {
+    it('does not throw error for good values', () => {
+        expect(() => assertNonNullable(false)).not.toThrowError();
+        expect(() => assertNonNullable(true)).not.toThrowError();
+        expect(() => assertNonNullable(1)).not.toThrowError();
+        expect(() => assertNonNullable('')).not.toThrowError();
+        expect(() => assertNonNullable(NaN)).not.toThrowError();
+        expect(() => assertNonNullable(BigInt(0))).not.toThrowError();
+    });
+
+    it('throws error for bad values', () => {
+        expect(() => assertNonNullable(undefined)).toThrowError();
+        expect(() => assertNonNullable(null)).toThrowError();
     });
 });
