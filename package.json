@@ -1,7 +1,7 @@
 {
   "name": "assertic",
   "description": "Assertions and Validations for TypeScript",
-  "version": "0.9.5",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "private": false,

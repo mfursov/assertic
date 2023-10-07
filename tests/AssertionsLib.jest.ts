@@ -39,4 +39,15 @@ describe('assertNonNullable', () => {
         expect(() => assertNonNullable(undefined)).toThrowError();
         expect(() => assertNonNullable(null)).toThrowError();
     });
+
+    it('throws an original error object', () => {
+        const error = new Error('My error');
+        let thrownError: unknown;
+        try {
+            assertNonNullable(null, () => error);
+        } catch (e) {
+            thrownError = e;
+        }
+        expect(thrownError).toBe(error);
+    });
 });

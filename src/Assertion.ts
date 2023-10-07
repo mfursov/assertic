@@ -20,25 +20,29 @@ export function truthy<T>(value: T, error?: AssertionErrorProvider): NonNullable
 }
 
 export function fail(error?: AssertionErrorProvider): never {
-    const errorMessage = getErrorMessage(error);
+    const errorMessage = getAssertionErrorFromProvider(error);
+    if (typeof errorMessage === 'object') {
+        throw errorMessage;
+    }
     throw new Error(errorMessage || 'Assertion error');
 }
 
 /** Returns validation context as a string. Calls errorProvider() if needed. */
-export function getErrorMessage(errorProvider: AssertionErrorProvider | undefined): string {
+export function getAssertionErrorFromProvider(errorProvider: AssertionErrorProvider | undefined): string | Error {
     if (errorProvider === undefined) {
         return '';
     }
     if (typeof errorProvider === 'string') {
         return errorProvider;
     }
-    const error = errorProvider();
-    if (typeof error === 'string') {
-        return error;
-    }
-    return error.message;
+    return errorProvider();
 }
 
+/** Returns validation context as a string. Calls errorProvider() if needed. */
+export function getErrorMessage(errorProvider: AssertionErrorProvider | undefined): string {
+    const error = getAssertionErrorFromProvider(errorProvider);
+    return typeof error === 'string' ? error : error.message || '<no error message>';
+}
 
 export type Assertion<T> = ValueAssertion<T> | ObjectAssertion<T>;
 

@@ -9,6 +9,7 @@ import {
     assertString,
     assertTruthy,
     CheckFn,
+    fail,
     isUuid,
     nullOr,
     ObjectAssertion,
@@ -36,9 +37,6 @@ describe('assertTruthy', () => {
         expect(() => assertTruthy(false)).toThrowError('Assertion error');
         expect(() => assertTruthy(false, 'My error message')).toThrowError('My error message');
         expect(() => assertTruthy(false, () => 'My lazily evaluated error message')).toThrowError('My lazily evaluated error message');
-
-        const error = new Error('My error');
-        expect(() => assertTruthy(false, () => error)).toThrow(error);
     });
 });
 
@@ -64,6 +62,40 @@ describe('truthy', () => {
         expect(truthy(func)).toBe(func);
     });
 });
+
+describe('fail', () => {
+    it('throws an error with the correct text', () => {
+        let thrownError: unknown;
+        try {
+            fail('error1');
+        } catch (e) {
+            thrownError = e;
+        }
+        expect((thrownError as Error)?.message).toBe('error1');
+    });
+
+    it('throws an error with the correct text', () => {
+        let thrownError: unknown;
+        try {
+            fail(()=>'error2');
+        } catch (e) {
+            thrownError = e;
+        }
+        expect((thrownError as Error)?.message).toBe('error2');
+    });
+
+    it('throws an original error object when provided', () => {
+        const error = new Error('My error');
+        let thrownError: unknown;
+        try {
+            fail(() => error);
+        } catch (e) {
+            thrownError = e;
+        }
+        expect(thrownError).toBe(error);
+    });
+});
+
 
 interface CheckedType {
     requiredStringField: string;
