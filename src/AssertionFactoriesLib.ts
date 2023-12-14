@@ -54,6 +54,16 @@ export function $a<T>(check: CheckFn<T> | CheckFn<unknown>, errorMessageProvider
 }
 
 /**
+ * Creates a new value assertion using *check* function.
+ * The assertion accepts the value as valid if 'check(value)' returns true or throws an error otherwise.
+ *
+ * Note: same as `$a` but forces processing of the check function argument as `unknown`.
+ */
+export function $u<T>(check: CheckFn<unknown>, errorMessageProvider?: AssertionErrorProvider): ValueAssertion<T> {
+    return $a(check, errorMessageProvider);
+}
+
+/**
  *  Creates an assertion that makes comparison by reference with the *expectedValue* before calling *orAssertion*.
  *  If comparison with the *expectedValue* succeeds, does not call the *orAssertion*.
  */

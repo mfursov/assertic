@@ -39,6 +39,11 @@ export const assertEmail: ValueAssertion<string> = (value: unknown, context = un
     assertTruthy(isEmail(value), () => formatError(context, 'Invalid email', value));
 };
 
+/** Asserts that the `value` type is a `Date` object. */
+export const assertDate: ValueAssertion<string> = (value: unknown, context = undefined): asserts value is Date => {
+    assertTruthy(value instanceof Date, () => formatError(context, 'Invalid Date', value));
+};
+
 export function assertNonNullable<T = unknown>(value: T, context?: AssertionErrorProvider): asserts value {
     assertTruthy(isNonNullable(value), () => formatError(context, `Value is ${value === undefined ? 'undefined' : 'null'}`, value));
 }
