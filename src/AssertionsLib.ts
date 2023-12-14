@@ -40,7 +40,7 @@ export const assertEmail: ValueAssertion<string> = (value: unknown, context = un
 };
 
 /** Asserts that the `value` type is a `Date` object. */
-export const assertDate: ValueAssertion<string> = (value: unknown, context = undefined): asserts value is Date => {
+export const assertDate: ValueAssertion<Date> = (value: unknown, context = undefined): asserts value is Date => {
     assertTruthy(value instanceof Date, () => formatError(context, 'Invalid Date', value));
 };
 

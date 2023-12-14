@@ -1,21 +1,26 @@
-/** Returns *true* if the value is *boolean*. */
+/** Returns `true` if the value is `boolean`. */
 export function isBoolean(value: unknown): value is boolean {
     return typeof value === 'boolean';
 }
 
-/** Returns *true* if the value is *string*. */
+/** Returns `true` if the value is `string`. */
 export function isString(value: unknown): value is string {
     return typeof value === 'string';
 }
 
-/** Returns *true* if the value is *number*. */
+/** Returns `true` if the value is `number`. */
 export function isNumber(value: unknown): value is number {
     return typeof value === 'number';
 }
 
+/** Returns `true` if the value is `Date` object. */
+export function isDate(value: unknown): value is Date {
+    return value instanceof Date;
+}
+
 /**
  * Checks that array has only unique elements.
- * Uses 'identity' function to perform checks.
+ * Uses `identity` function to perform checks.
  */
 export function checkArrayHasUniqueElements<T>(array: Array<T>, identity: (e: T) => string): boolean {
     if (array.length <= 1) {
