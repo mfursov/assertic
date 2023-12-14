@@ -74,6 +74,12 @@ export interface ObjectAssertionConstraints {
      * not covered by the assertions: beyond the asserted object type.
      */
     failOnUnknownFields?: boolean;
+
+    /**
+     * Allows listed field to pass `failOnUnknownFields` check.
+     * Used as part of `failOnUnknownFields` check only.
+     */
+    allowedUnknownFieldNames?: string[];
 }
 
 /**
@@ -97,8 +103,10 @@ export function assertObject<ObjectType>(value: unknown,
     assertTruthy(!Array.isArray(value), () => errorWithContext(`is an array.`));
     const assertionEntries = Object.entries(objectAssertion);
     if (constraints.failOnUnknownFields) {
+        const allowedUnknownFieldNames = constraints.allowedUnknownFieldNames || [];
         for (const objectFieldName in value) {
-            assertTruthy(assertionEntries.some(([assertionFieldName]) => objectFieldName === assertionFieldName),
+            const skipUnknownFieldCheck = allowedUnknownFieldNames.includes(objectFieldName);
+            assertTruthy(skipUnknownFieldCheck || assertionEntries.some(([assertionFieldName]) => objectFieldName === assertionFieldName),
                 errorWithContext(`property can't be checked: ${objectFieldName}`));
         }
     }

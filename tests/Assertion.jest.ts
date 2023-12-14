@@ -204,6 +204,14 @@ describe('Assertion', () => {
             expect(() => assertObject({a: 1, b: ''}, {b: assertString}, undefined, {failOnUnknownFields: true}))
                 .toThrowError(`property can't be checked: a`);
         });
+
+        it('uses allowedUnknownFieldNames correctly', () => {
+            expect(() => assertObject({a: 1, b: ''}, {b: assertString}, undefined, {
+                failOnUnknownFields: true,
+                allowedUnknownFieldNames: ['a']
+            }))
+                .not.toThrow();
+        });
     });
 
     describe('assertArray', () => {
