@@ -4,15 +4,17 @@ import {
   Assertion,
   AssertionErrorProvider,
   assertObject,
+  assertRecord,
   assertTruthy,
   callValueAssertion,
   getErrorMessage,
   ObjectAssertion,
+  RecordConstraints,
   ValueAssertion,
 } from './Assertion';
 import { assertString } from './AssertionsLib';
 
-/** A shortcut to build new object type assertion. */
+/** Wraps an object assertion as a value assertion. */
 export function objectAssertion<ObjectType>(
   objectTypeAssertion: ObjectAssertion<ObjectType>,
   errorContextProvider: AssertionErrorProvider | undefined = undefined,
@@ -21,8 +23,9 @@ export function objectAssertion<ObjectType>(
 }
 
 /**
- *  Creates an assertion for array object that checks that array is defined,
- *  the array satisfies the *constraints* and every element of the array passes the *elementAssertion* check.
+ *  Creates an ValueAssertion for an array.
+ *  The assertion check checks that array is defined,
+ *  satisfies the `constraints` and every element of the array passes the `elementAssertion` check.
  */
 export function arrayAssertion<T>(elementAssertion: Assertion<T>, constraints: ArrayConstraints<T> = {}): ValueAssertion<Array<T>> {
   const { minLength, maxLength } = constraints;
@@ -34,6 +37,19 @@ export function arrayAssertion<T>(elementAssertion: Assertion<T>, constraints: A
   assertTruthy((maxLength ?? 0) >= 0, `maxLength must be a positive number: ${maxLength}`);
   return (array: unknown, errorContextProvider: AssertionErrorProvider | undefined = undefined): asserts array is Array<T> => {
     assertArray(array, elementAssertion, constraints, errorContextProvider);
+  };
+}
+
+/** Creates a value assertion for the record of elements where each of the elements passes `valueAssertion` check. */
+export function recordAssertion<RecordValueType>(
+  valueAssertion: Assertion<RecordValueType>,
+  constraints: RecordConstraints<RecordValueType> = {},
+): ValueAssertion<Record<string, RecordValueType>> {
+  return (
+    value: unknown,
+    errorContextProvider: AssertionErrorProvider | undefined = undefined,
+  ): asserts value is Record<string, RecordValueType> => {
+    assertRecord(value, valueAssertion, constraints, errorContextProvider);
   };
 }
 

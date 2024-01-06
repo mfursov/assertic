@@ -1,12 +1,22 @@
 import { AssertionErrorProvider, assertTruthy, getAssertionErrorFromProvider, ValueAssertion } from './Assertion';
 import { isBoolean, isEmail, isHexString, isNonNullable, isNumber, isString, isUuid } from './ChecksLib';
 
+export function formatValue(value: unknown): string {
+  return value === undefined
+    ? '<undefined>'
+    : typeof value === 'symbol'
+      ? value.toString()
+      : value === null
+        ? '<null>'
+        : `<${typeof value}:${value}>`;
+}
+
 export function formatError(contextProvider: AssertionErrorProvider | undefined, message: string, value: unknown): string {
   const context = getAssertionErrorFromProvider(contextProvider);
   if (typeof context === 'object') {
     throw context;
   }
-  const renderedValue = value === undefined ? '<undefined>' : value === null ? '<null>' : `<${typeof value}:${value}>`;
+  const renderedValue = formatValue(value);
   return `${context ? `${context}: ` : ''}${message} ${renderedValue}`;
 }
 

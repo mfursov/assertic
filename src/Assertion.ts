@@ -1,4 +1,5 @@
 import { checkArrayHasUniqueElements } from './ChecksLib';
+import { formatValue } from './AssertionsLib';
 
 /** Lazy error message provider. */
 export type AssertionErrorProvider = (() => string | Error) | string;
@@ -47,7 +48,7 @@ export function getErrorMessage(errorProvider: AssertionErrorProvider | undefine
 export type Assertion<T> = ValueAssertion<T> | ObjectAssertion<T>;
 
 /**
- * Checks that the *value* type is correct and throws error if not.
+ * Checks that the `value` type is correct and throws error if not.
  * The assertion uses optional *errorProvider* to get the error message.
  */
 export type ValueAssertion<ValueType> = (
@@ -72,7 +73,7 @@ export type ObjectCrossFieldAssertion<ValueType> = (value: ValueType, errorProvi
 
 export interface ObjectAssertionConstraints {
   /**
-   * Makes *assertObject()* function to fail if *value* has any properties
+   * Makes `assertObject()` function to fail if `value` has any properties
    * not covered by the assertions: beyond the asserted object type.
    */
   failOnUnknownFields?: boolean;
@@ -140,7 +141,7 @@ export function assertObject<ObjectType>(
         const checkResult = (fieldAssertion as ValueAssertion<unknown>)(fieldValue, fieldCtx);
         assertTruthy(
           checkResult === undefined,
-          `Assertion function must assert (void) but it returns a value: ${checkResult}. Wrap with $v()?`,
+          `Assertion function must assert (void) but it returns a value: ${checkResult}. Wrap with $u()?`,
         );
       }
     }
@@ -164,7 +165,7 @@ export interface ArrayConstraints<T = unknown> {
 }
 
 /**
- * Asserts that the *value* is an array and every element in the array satisfy to the *elementAssertion*.
+ * Asserts that the `value` is an array and every element in the array satisfy to the *elementAssertion*.
  * Throws error if check fails.
  */
 export function assertArray<T>(
@@ -173,10 +174,7 @@ export function assertArray<T>(
   constraints: ArrayConstraints<T> = {},
   errorContextProvider: AssertionErrorProvider | undefined = undefined,
 ): asserts value is Array<T> {
-  const ctx = (mode: 'with-space-separator' | 'no-space-separator' = 'with-space-separator'): string => {
-    const text = getErrorMessage(errorContextProvider);
-    return text ? `${text}${mode === 'with-space-separator' ? ' ' : ''}` : '';
-  };
+  const ctx = createChildNodeContextProvider(errorContextProvider);
   assertTruthy(Array.isArray(value), () => `${ctx()}value is not an array: ${value}`);
   const minLength = constraints.minLength ?? 0;
   const maxLength = constraints.maxLength ?? Infinity;
@@ -198,15 +196,56 @@ export function assertArray<T>(
   const elementErrorProvider: AssertionErrorProvider = () => `${ctx('no-space-separator')}[${i}]`;
   for (; i < value.length; i++) {
     const element: unknown = value[i];
-    if (typeof elementAssertion === 'object') {
-      assertTruthy(
-        !Array.isArray(element),
-        () => `${elementErrorProvider}: use arrayAssertion() to create a ValueAssertion for an array`,
-      );
-      assertObject(element, elementAssertion, elementErrorProvider);
-    } else {
-      callValueAssertion(element, elementAssertion, elementErrorProvider);
+    assertChildValue(element, elementAssertion, elementErrorProvider);
+  }
+}
+
+/** Additional constraints for a value passed to `assertRecord` call. */
+export interface RecordConstraints<RecordValueType = unknown> {
+  /** An assertion to validate key format. */
+  keyAssertion?: ValueAssertion<string>;
+  /**
+   * Name of the key field in the 'RecordValueType' object.
+   * If present the RecordValueType[keyField] must be equal to the key this object is stored in the record.
+   */
+  keyField?: string;
+
+  /** A cross field assertion called for the whole record after all per-element completed successfully. */
+  $o?: ObjectCrossFieldAssertion<Record<string, RecordValueType>>;
+}
+
+/**
+ * Asserts that the `value` is record of values of the given types.
+ * Throws error if check fails.
+ */
+
+export function assertRecord<RecordValueType = unknown>(
+  value: unknown,
+  valueAssertion: Assertion<RecordValueType>,
+  constraints: RecordConstraints<RecordValueType> = {},
+  errorContextProvider: AssertionErrorProvider | undefined = undefined,
+): asserts value is Record<string, RecordValueType> {
+  const ctx = createChildNodeContextProvider(errorContextProvider);
+  assertTruthy(typeof value === 'object', () => `${ctx()}value is not an object: ${formatValue(value)}`);
+  assertTruthy(value !== null, () => `${ctx()}value is null`);
+  assertTruthy(!Array.isArray(value), () => `${ctx()}the value is not a record, but is an array`);
+  // Check every key and value.
+  for (const [k, v] of Object.entries(value)) {
+    const keyCtx: AssertionErrorProvider = () => `${ctx('no-space-separator')}['${k}']`;
+    if (constraints.keyAssertion) {
+      assertChildValue(k, constraints.keyAssertion, () => `${keyCtx()}, key assertion failed:`);
     }
+    assertChildValue(v, valueAssertion, keyCtx);
+    const { keyField } = constraints;
+    if (keyField) {
+      assertTruthy(typeof v == 'object' && v !== null, () => `${keyCtx()} is not an object: ${formatValue(v)}`);
+      const kv = (v as Record<string, unknown>)[keyField];
+      assertTruthy(kv === k, () => `${keyCtx()} key value does not match object field '${keyField}' value: ${formatValue(kv)}`);
+    }
+  }
+  // Check the whole record with a cross-field check.
+  if (constraints.$o) {
+    constraints.$o(value as Record<string, RecordValueType>, errorContextProvider);
   }
 }
 
@@ -220,4 +259,27 @@ export function callValueAssertion<T>(
   errorContextProvider: AssertionErrorProvider | undefined,
 ): asserts value is T {
   valueAssertion(value, errorContextProvider);
+}
+
+function createChildNodeContextProvider(errorContextProvider: (() => string | Error) | string | undefined) {
+  return (mode: 'with-space-separator' | 'no-space-separator' = 'with-space-separator'): string => {
+    const text = getErrorMessage(errorContextProvider);
+    return text ? `${text}${mode === 'with-space-separator' ? ' ' : ''}` : '';
+  };
+}
+
+function assertChildValue<T>(
+  value: unknown,
+  assertion: Assertion<T>,
+  elementErrorProvider: () => string | Error,
+): asserts value is T {
+  if (typeof assertion === 'object') {
+    assertTruthy(
+      !Array.isArray(value),
+      () => `${elementErrorProvider}: use arrayAssertion() to create a ValueAssertion for an array`,
+    );
+    assertObject(value, assertion, elementErrorProvider);
+  } else {
+    callValueAssertion(value, assertion, elementErrorProvider);
+  }
 }

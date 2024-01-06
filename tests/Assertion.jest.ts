@@ -5,8 +5,10 @@ import {
   arrayAssertion,
   assertArray,
   assertBoolean,
+  assertEmail,
   assertNumber,
   assertObject,
+  assertRecord,
   assertString,
   assertTruthy,
   CheckFn,
@@ -14,6 +16,7 @@ import {
   isUuid,
   nullOr,
   ObjectAssertion,
+  recordAssertion,
   truthy,
   undefinedOr,
 } from '../src';
@@ -107,6 +110,7 @@ describe('Assertion', () => {
 
     optionalObjectArray?: Array<CheckedSubType>;
     optionalStringArray?: string[];
+    optionalRecordOfStrings?: Record<string, string>;
   }
 
   interface CheckedSubType {
@@ -126,6 +130,7 @@ describe('Assertion', () => {
     optionalObjectField: undefinedOr(subTypeAssertion),
     optionalObjectArray: undefinedOr(arrayAssertion(subTypeAssertion)),
     optionalStringArray: undefinedOr(arrayAssertion(assertString)),
+    optionalRecordOfStrings: undefinedOr(recordAssertion(assertString)),
   };
 
   describe('assertObject', () => {
@@ -148,19 +153,17 @@ describe('Assertion', () => {
     });
 
     it('finds object fields with invalid value', () => {
-      // eslint-disable-next-line
       const value: CheckedType = {
         requiredStringField: '',
-        requiredObjectField: 10 as any,
+        requiredObjectField: 10 as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       };
       expect(() => assertObject(value, typeAssertion)).toThrowError('.requiredObjectField is not an object: number');
     });
 
     it('finds missed fields', () => {
-      // eslint-disable-next-line
       const value: CheckedType = {
         requiredObjectField: { requiredSubField: 10 },
-      } as any;
+      } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       expect(() => assertObject(value, typeAssertion)).toThrowError('.requiredStringField: Not a string <undefined>');
     });
 
@@ -177,10 +180,9 @@ describe('Assertion', () => {
     });
 
     it('finds missed fields in subtypes', () => {
-      // eslint-disable-next-line
       const value: CheckedType = {
         requiredStringField: '',
-        requiredObjectField: {} as any,
+        requiredObjectField: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       };
       expect(() => assertObject(value, typeAssertion)).toThrowError(
         '.requiredObjectField.requiredNumberSubField: Not a number <undefined>',
@@ -203,6 +205,24 @@ describe('Assertion', () => {
         optionalStringArray: ['a', 'b', 1] as string[],
       };
       expect(() => assertObject(value, typeAssertion)).toThrowError('.optionalStringArray[2]: Not a string <number:1>');
+    });
+
+    it('checks record fields, positive check', () => {
+      const value: CheckedType = {
+        requiredStringField: '',
+        requiredObjectField: { requiredNumberSubField: 10 },
+        optionalRecordOfStrings: { a: 'a' },
+      };
+      expect(() => assertObject(value, typeAssertion)).not.toThrow();
+    });
+
+    it('checks record fields, throw error', () => {
+      const value: CheckedType = {
+        requiredStringField: '',
+        requiredObjectField: { requiredNumberSubField: 10 },
+        optionalRecordOfStrings: { a: 1 } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      };
+      expect(() => assertObject(value, typeAssertion)).toThrow(".optionalRecordOfStrings['a']: Not a string <number:1>");
     });
 
     it('allows empty assertion for an empty type', () => {
@@ -293,6 +313,202 @@ describe('Assertion', () => {
       expect(() => assertArray(['1', '1'], assertString, { uniqueByIdentity: v => v })).toThrowError(
         'array contains non-unique elements',
       );
+    });
+  });
+
+  describe('assertRecord', () => {
+    const goodValue: CheckedType = {
+      requiredStringField: '',
+      requiredObjectField: { requiredNumberSubField: 10 },
+    };
+    const badValue = {} as unknown as CheckedType;
+
+    it('returns with no error if record is empty', () => {
+      expect(() => assertRecord({}, assertNumber)).not.toThrow();
+    });
+
+    it('returns with no error for a record with a valid numeric values', () => {
+      expect(() => assertRecord({ a: 1, b: 2 }, assertNumber)).not.toThrow();
+    });
+
+    it('returns with no error for a record with a valid string values', () => {
+      expect(() => assertRecord({ a: '1', b: '2' }, assertString)).not.toThrow();
+    });
+
+    it('returns with no error for a record with a valid object values', () => {
+      expect(() => assertRecord({ a: goodValue }, typeAssertion)).not.toThrow();
+    });
+
+    it('returns with no error for a record with a valid array values', () => {
+      expect(() => assertRecord({ a: [goodValue] }, arrayAssertion(typeAssertion))).not.toThrow();
+    });
+
+    it('throws error when a bad object value is used', () => {
+      expect(() => assertRecord({ a: badValue }, typeAssertion)).toThrowError("['a'].requiredStringField: Not a string <undefined>");
+    });
+
+    it('throws error when a bad primitive value is used', () => {
+      expect(() => assertRecord({ a: '1' }, assertNumber)).toThrowError("['a']: Not a number <string:1>");
+    });
+
+    it('throws error when a numeric value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          1,
+          $u(() => true),
+        ),
+      ).toThrow('value is not an object: <number:1>');
+    });
+
+    it('throws error when a string value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          '',
+          $u(() => true),
+        ),
+      ).toThrow('value is not an object: <string:>');
+    });
+
+    it('throws error when an undefined value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          undefined,
+          $u(() => true),
+        ),
+      ).toThrow('value is not an object: <undefined>');
+    });
+
+    it('throws error when an null value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          null,
+          $u(() => true),
+        ),
+      ).toThrow('value is null');
+    });
+
+    it('throws error when an array value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          [],
+          $u(() => true),
+        ),
+      ).toThrow('the value is not a record, but is an array');
+    });
+
+    it('throws error when a function value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          () => 123,
+          $u(() => true),
+        ),
+      ).toThrow('value is not an object: <function:() => 123>');
+    });
+
+    it('throws error when a symbol value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          Symbol('a'),
+          $u(() => true),
+        ),
+      ).toThrow('value is not an object: Symbol(a)');
+    });
+    it('throws error when a bigint value is passed instead of a record', () => {
+      expect(() =>
+        assertRecord(
+          BigInt(10),
+          $u(() => true),
+        ),
+      ).toThrowError('value is not an object: <bigint:10>');
+    });
+
+    it('checks constraints.keyAssertion, success case', () => {
+      let keyAssertionArg: unknown;
+      const keyAssertion = $u(key => {
+        expect(keyAssertionArg).toBe(undefined);
+        expect(key).toBe('a');
+        keyAssertionArg = key;
+        return true;
+      });
+      expect(() => assertRecord({ a: 1 }, assertNumber, { keyAssertion })).not.toThrow();
+      expect(keyAssertionArg).toBe('a');
+    });
+
+    it('checks constraints.keyAssertion, error case', () => {
+      expect(() => assertRecord({ a: 1 }, assertNumber, { keyAssertion: assertEmail })).toThrow(
+        "['a'], key assertion failed:: Invalid email <string:a>",
+      );
+    });
+
+    it('checks constraints.keyField, success case', () => {
+      expect(() =>
+        assertRecord(
+          { a: { id: 'a' } },
+          $u(() => true),
+          { keyField: 'id' },
+        ),
+      ).not.toThrow();
+    });
+
+    it('checks constraints.keyField, missed field', () => {
+      expect(() =>
+        assertRecord(
+          { a: { id: 'a' } },
+          $u(() => true),
+          { keyField: 'id2' },
+        ),
+      ).toThrow("['a'] key value does not match object field 'id2' value: <undefined>");
+    });
+
+    it('checks constraints.keyField, wrong field value', () => {
+      expect(() =>
+        assertRecord(
+          { a: { id: 'b' } },
+          $u(() => true),
+          { keyField: 'id' },
+        ),
+      ).toThrow("['a'] key value does not match object field 'id' value: <string:b>");
+    });
+
+    it('checks constraints.keyField, not an object', () => {
+      expect(() =>
+        assertRecord(
+          { a: 1 },
+          $u(() => true),
+          { keyField: 'id' },
+        ),
+      ).toThrow("['a'] is not an object: <number:1>");
+    });
+
+    it('calls $o', () => {
+      const checkValue = { a: 1 };
+      let $oValue: unknown;
+      expect(() =>
+        assertRecord(
+          checkValue,
+          $u(() => true),
+          {
+            $o: $u(v => {
+              expect($oValue).toBeUndefined();
+              $oValue = v;
+              return true;
+            }),
+          },
+        ),
+      ).not.toThrow();
+      expect($oValue).toBe(checkValue);
+    });
+
+    it('fails if $o fails', () => {
+      expect(() =>
+        assertRecord(
+          { a: 1 },
+          $u(() => true),
+          {
+            $o: assertNumber,
+          },
+        ),
+      ).toThrow('Not a number <object:[object Object]>');
     });
   });
 
