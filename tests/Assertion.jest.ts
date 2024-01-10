@@ -4,7 +4,6 @@ import {
   $u,
   arrayAssertion,
   assertArray,
-  assertBoolean,
   assertEmail,
   assertNumber,
   assertObject,
@@ -16,10 +15,9 @@ import {
   isUuid,
   nullOr,
   ObjectAssertion,
-  recordAssertion,
   truthy,
-  undefinedOr,
 } from '../src';
+import { CheckedType, typeAssertion } from './Shared';
 
 describe('Assertion', () => {
   describe('assertTruthy', () => {
@@ -100,38 +98,6 @@ describe('Assertion', () => {
       expect(thrownError).toBe(error);
     });
   });
-
-  interface CheckedType {
-    requiredStringField: string;
-    optionalNumberField?: number;
-
-    requiredObjectField: CheckedSubType;
-    optionalObjectField?: CheckedSubType;
-
-    optionalObjectArray?: Array<CheckedSubType>;
-    optionalStringArray?: string[];
-    optionalRecordOfStrings?: Record<string, string>;
-  }
-
-  interface CheckedSubType {
-    requiredNumberSubField: number;
-    optionalBooleanSubField?: boolean;
-  }
-
-  const subTypeAssertion: ObjectAssertion<CheckedSubType> = {
-    requiredNumberSubField: assertNumber,
-    optionalBooleanSubField: undefinedOr(assertBoolean),
-  };
-
-  const typeAssertion: ObjectAssertion<CheckedType> = {
-    requiredStringField: assertString,
-    optionalNumberField: undefinedOr(assertNumber),
-    requiredObjectField: subTypeAssertion,
-    optionalObjectField: undefinedOr(subTypeAssertion),
-    optionalObjectArray: undefinedOr(arrayAssertion(subTypeAssertion)),
-    optionalStringArray: undefinedOr(arrayAssertion(assertString)),
-    optionalRecordOfStrings: undefinedOr(recordAssertion(assertString)),
-  };
 
   describe('assertObject', () => {
     it('returns with no error if everything is OK', () => {

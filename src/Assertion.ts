@@ -168,12 +168,12 @@ export interface ArrayConstraints<T = unknown> {
  * Asserts that the `value` is an array and every element in the array satisfy to the *elementAssertion*.
  * Throws error if check fails.
  */
-export function assertArray<T>(
+export function assertArray<ElementType>(
   value: unknown,
-  elementAssertion: Assertion<T>,
-  constraints: ArrayConstraints<T> = {},
+  elementAssertion: Assertion<ElementType>,
+  constraints: ArrayConstraints<ElementType> = {},
   errorContextProvider: AssertionErrorProvider | undefined = undefined,
-): asserts value is Array<T> {
+): asserts value is Array<ElementType> {
   const ctx = createChildNodeContextProvider(errorContextProvider);
   assertTruthy(Array.isArray(value), () => `${ctx()}value is not an array: ${value}`);
   const minLength = constraints.minLength ?? 0;
