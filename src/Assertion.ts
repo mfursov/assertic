@@ -1,5 +1,5 @@
 import { checkArrayHasUniqueElements } from './ChecksLib';
-import { formatValue } from './AssertionsLib';
+import { formatValue } from './Formatter';
 
 /** Lazy error message provider. */
 export type AssertionErrorProvider = (() => string | Error) | string;
