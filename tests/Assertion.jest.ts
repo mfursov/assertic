@@ -109,7 +109,6 @@ describe('Assertion', () => {
     });
 
     it('finds primitive fields with invalid value', () => {
-      // eslint-disable-next-line
       const value: CheckedType = {
         // eslint-disable-next-line
         requiredStringField: 22 as any,
@@ -134,7 +133,6 @@ describe('Assertion', () => {
     });
 
     it('checks fields in subtypes', () => {
-      // eslint-disable-next-line
       const value: CheckedType = {
         requiredStringField: '',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

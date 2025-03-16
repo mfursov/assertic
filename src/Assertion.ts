@@ -238,7 +238,7 @@ export function assertRecord<RecordValueType = unknown>(
     assertChildValue(v, valueAssertion, keyCtx);
     const { keyField } = constraints;
     if (keyField) {
-      assertTruthy(typeof v == 'object' && v !== null, () => `${keyCtx()} is not an object: ${formatValue(v)}`);
+      assertTruthy(typeof v === 'object' && v !== null, () => `${keyCtx()} is not an object: ${formatValue(v)}`);
       const kv = (v as Record<string, unknown>)[keyField];
       assertTruthy(kv === k, () => `${keyCtx()} key value does not match object field '${keyField}' value: ${formatValue(kv)}`);
     }
