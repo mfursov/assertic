@@ -4,6 +4,14 @@ import { formatValue } from './Formatter';
 /** Lazy error message provider. */
 export type AssertionErrorProvider = (() => string | Error) | string;
 
+const defaultAssertionErrorFactory = (message: string) => new Error(message);
+let assertionErrorFactory = defaultAssertionErrorFactory;
+
+/** Overrides the default error factory for assertions. */
+export function setDefaultAssertionErrorFactory(factory?: (message: string) => Error): void {
+  assertionErrorFactory = factory || defaultAssertionErrorFactory;
+}
+
 /** Asserts that the *param* value is truthy using '!' operator or throws an Error.  */
 export function assertTruthy(value: unknown, error?: AssertionErrorProvider): asserts value {
   if (!value) {
@@ -25,7 +33,7 @@ export function fail(error?: AssertionErrorProvider): never {
   if (typeof errorMessage === 'object') {
     throw errorMessage;
   }
-  throw new Error(errorMessage || 'Assertion error');
+  throw assertionErrorFactory(errorMessage || 'Assertion error');
 }
 
 /** Returns validation context as a string. Calls errorProvider() if needed. */

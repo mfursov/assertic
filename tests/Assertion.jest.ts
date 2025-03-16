@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
 import {
   $a,
   $u,
@@ -15,11 +15,15 @@ import {
   isUuid,
   nullOr,
   ObjectAssertion,
+  setDefaultAssertionErrorFactory,
   truthy,
 } from '../src';
 import { CheckedType, typeAssertion } from './Shared';
 
 describe('Assertion', () => {
+  beforeEach(() => {
+    setDefaultAssertionErrorFactory();
+  });
   describe('assertTruthy', () => {
     it('throws a default error for falsy values', () => {
       expect(() => assertTruthy(false)).toThrowError('Assertion error');
@@ -537,6 +541,16 @@ describe('Assertion', () => {
     it('throws Error when gets bad values', () => {
       expect(() => $u(v => v === '1')('a')).toThrowError(`Check is failed: 'a'`);
       expect(() => $u(v => v instanceof Date)(1)).toThrowError(`Check is failed: '1'`);
+    });
+  });
+
+  describe('assertion error factory', () => {
+    it('uses the factory', () => {
+      setDefaultAssertionErrorFactory(message => new Error(`abc:${message}`));
+      expect(() => truthy(Date.now() === 0, 'def')).toThrowError(`abc:def`);
+
+      setDefaultAssertionErrorFactory(message => new Error(`abc:${message}`));
+      expect(() => truthy(Date.now() === 0, 'def')).toThrowError(`def`);
     });
   });
 });
