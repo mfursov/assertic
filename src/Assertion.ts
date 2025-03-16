@@ -4,36 +4,45 @@ import { formatValue } from './Formatter';
 /** Lazy error message provider. */
 export type AssertionErrorProvider = (() => string | Error) | string;
 
-const defaultAssertionErrorFactory = (message: string): Error => new Error(message);
+const defaultAssertionErrorFactory: (message: string, ...additionalData: unknown[]) => Error = (message: string): Error =>
+  new Error(message);
 let assertionErrorFactory = defaultAssertionErrorFactory;
 
 /** Overrides the default error factory for assertions. */
-export function setDefaultAssertionErrorFactory(factory?: (message: string) => Error): void {
+export function setDefaultAssertionErrorFactory(factory?: (message: string, ...additionalData: unknown[]) => Error): void {
   assertionErrorFactory = factory || defaultAssertionErrorFactory;
 }
 
-/** Asserts that the *param* value is truthy using '!' operator or throws an Error.  */
-export function assertTruthy(value: unknown, error?: AssertionErrorProvider): asserts value {
+/**
+ * Asserts that the *param* value is truthy using '!' operator or throws an Error.
+ * Now supports optional vararg parameters after the AssertionErrorProvider.
+ */
+export function assertTruthy(value: unknown, error?: AssertionErrorProvider, ...additionalData: unknown[]): asserts value {
   if (!value) {
-    fail(error);
+    fail(error, ...additionalData);
   }
 }
 
 /**
  * Casts the 'value' to a non-nullable type or throws an error.
  * Uses 'assertTruthy' to make the check.
+ * Now supports optional vararg parameters after the AssertionErrorProvider.
  */
-export function truthy<T>(value: T, error?: AssertionErrorProvider): NonNullable<T> {
-  assertTruthy(value, error);
+export function truthy<T>(value: T, error?: AssertionErrorProvider, ...additionalData: unknown[]): NonNullable<T> {
+  assertTruthy(value, error, ...additionalData);
   return value as NonNullable<T>;
 }
 
-export function fail(error?: AssertionErrorProvider): never {
+/**
+ * Fails the assertion by throwing an error.
+ * Now supports optional vararg parameters after the AssertionErrorProvider.
+ */
+export function fail(error?: AssertionErrorProvider, ...additionalData: unknown[]): never {
   const errorMessage = getAssertionErrorFromProvider(error);
   if (typeof errorMessage === 'object') {
     throw errorMessage;
   }
-  throw assertionErrorFactory(errorMessage || 'Assertion error');
+  throw assertionErrorFactory(errorMessage || 'Assertion error', ...additionalData);
 }
 
 /** Returns validation context as a string. Calls errorProvider() if needed. */

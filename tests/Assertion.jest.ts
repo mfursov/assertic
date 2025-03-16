@@ -552,5 +552,10 @@ describe('Assertion', () => {
       setDefaultAssertionErrorFactory(message => new Error(`abc:${message}`));
       expect(() => truthy(Date.now() === 0, 'def')).toThrowError(`def`);
     });
+
+    it('uses additional data', () => {
+      setDefaultAssertionErrorFactory((message, a1, a2) => new Error(`abc:${message}:${a1}:${a2}`));
+      expect(() => truthy(Date.now() === 0, 'def', 1, 2)).toThrowError(`abc:def:1:2`);
+    });
   });
 });
