@@ -4,7 +4,7 @@ import { formatValue } from './Formatter';
 /** Lazy error message provider. */
 export type AssertionErrorProvider = (() => string | Error) | string;
 
-const defaultAssertionErrorFactory = (message: string) => new Error(message);
+const defaultAssertionErrorFactory = (message: string): Error => new Error(message);
 let assertionErrorFactory = defaultAssertionErrorFactory;
 
 /** Overrides the default error factory for assertions. */
