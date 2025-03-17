@@ -193,6 +193,24 @@ describe('Assertion', () => {
       expect(() => assertObject(value, typeAssertion)).toThrow(".optionalRecordOfStrings['a']: Not a string <number:1>");
     });
 
+    it('checks date fields, allows it to be optional', () => {
+      const value: CheckedType = {
+        requiredStringField: '',
+        requiredObjectField: { requiredNumberSubField: 10 },
+        optionalDateField: undefined,
+      };
+      expect(() => assertObject(value, typeAssertion)).not.toThrow();
+    });
+
+    it('checks date fields, throw error', () => {
+      const value: CheckedType = {
+        requiredStringField: '',
+        requiredObjectField: { requiredNumberSubField: 10 },
+        optionalDateField: null as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      };
+      expect(() => assertObject(value, typeAssertion)).toThrow('.optionalDateField: Invalid Date <null>');
+    });
+
     it('allows empty assertion for an empty type', () => {
       expect(() => assertObject({}, {})).not.toThrow();
       expect(() => assertObject({}, {}, undefined, { failOnUnknownFields: true })).not.toThrow();

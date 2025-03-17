@@ -1,4 +1,13 @@
-import { arrayAssertion, assertBoolean, assertNumber, assertString, ObjectAssertion, recordAssertion, undefinedOr } from '../src';
+import {
+  arrayAssertion,
+  assertBoolean,
+  assertDate,
+  assertNumber,
+  assertString,
+  ObjectAssertion,
+  recordAssertion,
+  undefinedOr,
+} from '../src';
 
 export interface CheckedType {
   requiredStringField: string;
@@ -10,6 +19,7 @@ export interface CheckedType {
   optionalObjectArray?: Array<CheckedSubType>;
   optionalStringArray?: string[];
   optionalRecordOfStrings?: Record<string, string>;
+  optionalDateField?: Date;
 }
 
 export const subTypeAssertion: ObjectAssertion<CheckedSubType> = {
@@ -25,6 +35,7 @@ export const typeAssertion: ObjectAssertion<CheckedType> = {
   optionalObjectArray: undefinedOr(arrayAssertion(subTypeAssertion)),
   optionalStringArray: undefinedOr(arrayAssertion(assertString)),
   optionalRecordOfStrings: undefinedOr(recordAssertion(assertString)),
+  optionalDateField: undefinedOr(assertDate),
 };
 
 export interface CheckedSubType {
