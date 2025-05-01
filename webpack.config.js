@@ -13,6 +13,10 @@ const tsRule = {
       loader: 'ts-loader',
       options: {
         onlyCompileBundledFiles: true,
+        compilerOptions: {
+          declaration: true,
+          rootDir: './src'
+        }
       },
     },
   ],

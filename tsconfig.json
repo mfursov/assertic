@@ -5,7 +5,6 @@
     "lib": [
       "ES2022"
     ],
-    "declaration": true,
     "module": "ESNext",
     "moduleResolution": "node",
     "noEmitOnError": true,
