@@ -5,6 +5,7 @@ module.exports = [
     entry: './src/index.ts',
     target: 'node',
     mode: 'production',
+    devtool: 'source-map',
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'index.cjs.js',
@@ -29,6 +30,7 @@ module.exports = [
     entry: './src/index.ts',
     target: 'node',
     mode: 'production',
+    devtool: 'source-map',
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'index.esm.js',
@@ -51,5 +53,5 @@ module.exports = [
         },
       ],
     },
-  },
+  }
 ];
